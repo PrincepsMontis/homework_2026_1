@@ -219,3 +219,4 @@ QUnit.test("Регистронезависимость не влияет на у
         assert.strictEqual(email, email.toLowerCase(), `Email ${email} должен быть в нижнем регистре`);
     });
 });
+

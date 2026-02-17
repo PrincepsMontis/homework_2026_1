@@ -99,3 +99,4 @@ const emailAnalyzer = (text) => {
         mostFrequentEmail: mostFrequentEmail
     };
 };
+
