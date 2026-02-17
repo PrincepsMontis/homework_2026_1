@@ -57,14 +57,18 @@ QUnit.module("Тестируем функцию emailAnalyzer", function() {
     });
 
     QUnit.test("Находит несколько разных email", function(assert) {
-        const input = "Свяжитесь с нами: support@company.com или sales@company.com или info@company.com";
-        const result = emailAnalyzer(input);
+    const input = "Свяжитесь с нами: support@company.com или sales@company.com или info@company.com";
+    const result = emailAnalyzer(input);
 
-        assert.deepEqual(result, {
-            emailCount: 3,
-            uniqueEmails: ["support@company.com", "sales@company.com", "info@company.com"],
-            mostFrequentEmail: "support@company.com" // или любой другой, т.к. все встречаются по 1 разу
-        });
+    assert.strictEqual(result.emailCount, 3, "Должно быть 3 email");
+    assert.strictEqual(result.uniqueEmails.length, 3, "Должно быть 3 уникальных email");
+    assert.ok(result.uniqueEmails.includes("support@company.com"), "Должен содержать support@company.com");
+    assert.ok(result.uniqueEmails.includes("sales@company.com"), "Должен содержать sales@company.com");
+    assert.ok(result.uniqueEmails.includes("info@company.com"), "Должен содержать info@company.com");
+    assert.ok(
+        result.uniqueEmails.includes(result.mostFrequentEmail),
+        `Самый частый email (${result.mostFrequentEmail}) должен быть одним из найденных email`
+    );
     });
 
     QUnit.test("Правильно определяет самый частый email", function(assert) {
@@ -160,5 +164,58 @@ QUnit.module("Тестируем функцию emailAnalyzer", function() {
         assert.strictEqual(result.emailCount, 3, "Должно быть 3 email");
         assert.strictEqual(result.uniqueEmails.length, 3, "Все email должны быть уникальными");
     });
+QUnit.test("Правильно обрабатывает регистронезависимость при подсчете частоты", function(assert) {
+    const input = "USER@EXAMPLE.com user@example.com User@Example.COM USER@EXAMPLE.COM";
+    const result = emailAnalyzer(input);
 
+    assert.strictEqual(result.emailCount, 4, "Должно быть найдено 4 email адреса");
+    assert.strictEqual(result.uniqueEmails.length, 1, "Должен быть только 1 уникальный email (регистронезависимо)");
+    assert.deepEqual(result.uniqueEmails, ["user@example.com"], "Уникальный email должен быть в нижнем регистре");
+    assert.strictEqual(result.mostFrequentEmail, "user@example.com", "Самый частый email должен быть в нижнем регистре");
+});
 
+QUnit.test("Регистронезависимость работает со смешанными регистрами и разными доменами", function(assert) {
+    const input = "TEST@test.com test@TEST.com Test@Test.com user@MAIL.ru USER@mail.ru admin@SITE.com ADMIN@site.com";
+    const result = emailAnalyzer(input);
+
+    assert.strictEqual(result.emailCount, 7, "Должно быть найдено 7email адресов");
+    assert.strictEqual(result.uniqueEmails.length, 3, "Должно быть 3 уникальных email (регистронезависимо)");
+    assert.deepEqual(
+        result.uniqueEmails.sort(),
+        ["admin@site.com", "test@test.com", "user@mail.ru"].sort(),
+        "Все уникальные email должны быть в нижнем регистре"
+    );
+    
+    assert.strictEqual(result.mostFrequentEmail, "test@test.com", "Самый частый - test@test.com (встречается 3 раза)");
+});
+
+QUnit.test("Регистронезависимость работает с email, содержащими специальные символы", function(assert) {
+    const input = "User.Name+tag@Example.com user.name+TAG@example.com USER.NAME+TAG@EXAMPLE.COM";
+    const result = emailAnalyzer(input);
+
+    assert.strictEqual(result.emailCount, 3, "Должно быть найдено 3 email адреса");
+    assert.strictEqual(result.uniqueEmails.length, 1, "Должен быть только 1 уникальный email");
+    assert.strictEqual(
+        result.uniqueEmails[0], 
+        "user.name+tag@example.com", 
+        "Уникальный email должен быть в нижнем регистре со всеми специальными символами"
+    );
+    assert.strictEqual(
+        result.mostFrequentEmail, 
+        "user.name+tag@example.com", 
+        "Самый частый email должен быть в нижнем регистре"
+    );
+});
+
+QUnit.test("Регистронезависимость не влияет на уникальность разных email", function(assert) {
+    const input = "user@test.com USER@test.com user@TEST.com user@different.com";
+    const result = emailAnalyzer(input);
+
+    assert.strictEqual(result.emailCount, 4, "Должно быть найдено 4 email адреса");
+    assert.strictEqual(result.uniqueEmails.length, 2, "Должно быть 2 уникальных email");
+    assert.ok(result.uniqueEmails.includes("user@test.com"), "Должен содержать user@test.com");
+    assert.ok(result.uniqueEmails.includes("user@different.com"), "Должен содержать user@different.com");
+    result.uniqueEmails.forEach(email => {
+        assert.strictEqual(email, email.toLowerCase(), `Email ${email} должен быть в нижнем регистре`);
+    });
+});

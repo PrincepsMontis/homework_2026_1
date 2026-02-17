@@ -2,14 +2,20 @@
  * Анализирует строку и возвращает статистику по электронным адресам
  * @param {string} text - входная строка для анализа
  * @returns {Object} объект с полями emailCount, uniqueEmails, mostFrequentEmail
+ * @example
+ * // возвращает {
+ * //   emailCount: 3,
+ * //   uniqueEmails: ['user@example.com', 'admin@test.com'],
+ * //   mostFrequentEmail: 'user@example.com'
+ * // }
+ * emailAnalyzer('user@example.com admin@test.com user@example.com');
  */
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
 const emailAnalyzer = (text) => {
     // Простое регулярное выражение для поиска потенциальных email
     // Находит последовательности с @ и хотя бы одной точкой после
-    const potentialEmailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-    
-    
-    const foundEmails = text.match(potentialEmailRegex) || [];
+    const foundEmails = text.match(EMAIL_REGEX) || [];
     
     
     const validEmails = foundEmails.filter(email => {
