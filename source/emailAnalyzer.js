@@ -11,6 +11,12 @@
  * // }
  * emailAnalyzer('user@example.com admin@test.com user@example.com');
  */
+
+/**
+ * Регулярное выражение для поиска email адресов в тексте
+ * @constant {RegExp}
+ * @default
+ */
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 
 const emailAnalyzer = (text) => {
